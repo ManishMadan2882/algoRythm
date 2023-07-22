@@ -29,32 +29,17 @@ async function compile(req,res)
        }
        const child = exec(commands[language], { stdio: 'pipe' }, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Error: ${error.message}`);
-          return;
+         res.json({output : error.message});
+         return;
         }
-        console.log(`Output: ${stdout}`);
+        res.json({output : stdout});
       });
-      
       
       // Write the input to the child process
       child.stdin.write(input);
       child.stdin.end(); // End the input stream
       
-      // Handle output or errors if needed
-      
-      child.stdout.on('data', (data) => {
-        result = result  + data;
-        console.log(`Received output: ${data}`);
-        
-      });
-      
-      child.stderr.on('data', (data) => {
-        console.error(`Received error: ${data}`);
-      });
-      child.on('close', function(code) {
-        //Here you can get the exit code of the script
-        res.json({output : result});
-    })
+ 
       
 });
 }
