@@ -22,8 +22,8 @@ async function compile(req,res)
        await fs.writeFile(path, code,()=>console.log('written'))
        const commands = {
         java:`javac ${path} && java Main`,
-        cpp:`gcc ${path}.c && \a.out`,
-        c:`gcc ${path}.c && \a.out`,
+        cpp:`gcc ${path} && \a.out`,
+        c:`gcc ${path} && \a.out`,
         python:`python ${path}`,
         javascript:`node ${path}`
        }
