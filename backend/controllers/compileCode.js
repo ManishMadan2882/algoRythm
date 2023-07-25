@@ -5,6 +5,7 @@ const {exec} = require('child_process')
 async function compile(req,res)
 {
     const {code,language,input} =req.body
+    console.log({code,input,language});
     let result = '';
        const extensions = {
         java:".java",
@@ -19,11 +20,12 @@ async function compile(req,res)
                  
        console.log("File: ", path);
        console.log("Filedescriptor: ", fd);
-       await fs.writeFile(path, code,()=>console.log('written'))
+       fs.writeFile(path, code, () => console.log('written file'))
+      
        const commands = {
-        java:`javac ${path} && java Main`,
-        cpp:`gcc ${path} && \a.out`,
-        c:`gcc ${path} && \a.out`,
+        java:`javac ${path} && java ${path}`,
+        cpp:`g++ ${path} -o outputCPP && ./outputCPP`,
+        c:`gcc ${path} -o outputC && ./outputC`,
         python:`python ${path}`,
         javascript:`node ${path}`
        }
