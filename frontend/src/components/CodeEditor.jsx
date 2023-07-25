@@ -47,7 +47,7 @@ const CodeEditor = () => {
     const  [language,setLanguage] = useState('java')
    // const [code,setCode] = useState('')
     return (
-        <div className='flex flex-wrap justify-normal bg-gray-800'>
+        <div className='flex flex-wrap justify-normal bg-gray-800 h-full'>
           <div className='w-full  md:w-2/3'>
           <div >
             <select value={theme}  onChange={(e)=>setTheme(e.target.value)}
@@ -94,16 +94,16 @@ const CodeEditor = () => {
           /> 
           </div>
           <div className='w-full  md:w-1/3 p-2'>
-            <div className='w-full' >
-                <label className="mb-2 text-sm font-medium inline dark:text-white text-gray-900">Input</label>
-                <button onClick={showValue} className=' bg-black hover:bg-gray-600 text-teal-200 px-2 m-2'>
-                    Run
+            <div className='w-full ' >
+                <label className="mb-2 text-sm font-medium inline dark:text-white text-gray-900">INPUT</label>
+                <button onClick={showValue} className=' bg-cyan-950 border-white border-[0.25px] hover:bg-gray-600 text-teal-200 rounded-md p-1 m-2'>
+                    RUN
                 </button>
                 <textarea value={input} rows="14" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Testcase 0"/>
             </div>
             <div className='w-full'>
-                <label className="block mb-2 text-sm font-medium dark:text-white text-gray-900">Output</label>
-                <pre className="p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 h-72 block dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Testcase 0">
+                <label className="block mb-2 text-sm font-medium dark:text-white text-gray-900">OUTPUT</label>
+                <pre className="p-2.5 w-full text-sm  rounded-lg border  bg-gray-700 border-gray-600 h-72 block placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0">
                    {output}
                 </pre>
             </div>
