@@ -13,7 +13,8 @@
     "@monaco-editor/react": "^4.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-monaco-editor": "^0.53.0"
+    "react-monaco-editor": "^0.53.0",
+    "react-spinners": "^0.13.8"
   },
   "devDependencies": {
     "@types/react": "^18.0.37",

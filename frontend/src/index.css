@@ -4,3 +4,16 @@
 input[type="range"] {
     accent-color: white;
   }
+  .editscroll::-webkit-scrollbar {
+    width: 12px;               /* width of the entire scrollbar */
+  }
+  
+  .editscroll::-webkit-scrollbar-track {
+    background: gray;        /* color of the tracking area */
+  }
+
+  .editscroll::-webkit-scrollbar-thumb {
+    background-image: linear-gradient(to right, rgba(130, 94, 175, 0), rgb(82, 114, 163));    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid beige;  /* creates padding around scroll thumb */
+  }
