@@ -31,7 +31,6 @@ const CodeEditor = () => {
         localStorage.setItem(key,value);
     }
     const compileCode = (code)=>{
-        window.location.replace('#terminal');
         setOutputLoading(true);
         setOutput('');
         console.log({code:code,language:language,input:input});
@@ -52,16 +51,16 @@ const CodeEditor = () => {
             })
             .catch(error => console.error(error));
     }
-    const  [theme,setTheme] = useState('vs-dark')
+    const  [theme,setTheme] = useState(localStorage.getItem('editorTheme') || 'vs-dark')
     const  [input,setInput] = useState('')
     const  [output,setOutput] = useState('')
     const  [fontSize,setFontSize] = useState(16) 
-    const  [language,setLanguage] = useState(localStorage.getItem('language') || 'c++')
+    const  [language,setLanguage] = useState(localStorage.getItem('language') || 'cpp')
     const  [outputLoading, setOutputLoading] = useState(false);
     
     return (
         <div className='flex flex-wrap   justify-normal  '>
-          <div className='w-full  md:w-2/3'>
+          <div className='w-full  lg:w-2/3'>
           <div >
             <select value={theme}  onChange={(e)=>{
                 setTheme(e.target.value);
@@ -106,7 +105,9 @@ const CodeEditor = () => {
             theme={theme}
           
             defaultValue={language === 'python' ?"## Write Code here" : "/* Write Code here */"}
-            
+            height={
+              "666px"
+            }
             options={{
                 fontSize:Number(fontSize),
             }}
@@ -115,7 +116,7 @@ const CodeEditor = () => {
             language={language}
           /> 
           </div>
-          <div className='w-full  md:w-1/3 p-2'>
+          <div className='w-full  lg:w-1/3 p-2'>
             <div className='w-full ' >
                 <label className="mb-2 text-sm font-medium inline text-white">INPUT</label>
                 <button onClick={showValue} className=' bg-cyan-950  border-white border-[0.25px] hover:bg-gray-600 text-teal-200 rounded-md p-1 m-2'>
