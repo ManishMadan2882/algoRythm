@@ -32,13 +32,13 @@ async function compile(req,res)
         python:`python ${path}`,
         javascript:`node ${path}`
        }
-       
+       const initialTime = Date.now();
        const child = exec(commands[language], { stdio: 'pipe' }, (error, stdout, stderr) => {
         if (error) {
-         res.json({output : error.message});
+         res.json({output : error.message,runtime : Date.now()-initialTime});
          return;
         }
-        res.json({output : stdout});
+        res.json({output : stdout,runtime:Date.now()-initialTime});
       });
       
       // Write the input to the child process

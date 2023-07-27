@@ -1,4 +1,6 @@
-# algoRythm - Virtual Compiler for Multiple Programming Languages
+
+# algoRythm# algoRythm - Virtual Compiler for Multiple Programming Languages
+
 
 ## Introduction
 

@@ -1,4 +1,5 @@
 import React from 'react'
+import copyIcon from '../assets/icons8-copy-24.png'
 import { Editor } from '@monaco-editor/react';
 import ClipLoader from "react-spinners/ClipLoader";
 import { useState,useRef } from 'react';
@@ -30,7 +31,8 @@ const CodeEditor = () => {
         setOutputLoading(true);
         setOutput('');
         console.log({code:code,language:language,input:input});
-        fetch('https://api-compile.onrender.com/api/v1/compile', {
+        //https://api-compile.onrender.com/api/v1/compile
+        fetch('http://localhost:5000/api/v1/compile', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -40,7 +42,8 @@ const CodeEditor = () => {
             .then(response => response.json())
             .then(data =>{ 
                 console.log(data)
-                setOutput(data.output)
+                setOutput(data)
+                
                 setOutputLoading(false);
             })
             .catch(error => console.error(error));
@@ -106,10 +109,13 @@ const CodeEditor = () => {
                 </button>
                 <textarea value={input} rows="14" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm    bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0"/>
             </div>
-            <div className='w-full'>
-                <label className="block mb-2 text-sm font-medium text-white ">OUTPUT</label>
+            <div className='w-full mt-2'>
+                <label className="inline mb-2 text-sm font-medium text-white ">OUTPUT {output && ` [${output.runtime} ms]`}</label>
+                <button title="Copy Output" onClick={()=>navigator.clipboard.writeText(output.output)} className=' float-right hover:bg-gray-700 p-2 rounded-lg'>
+                   <img src={copyIcon}/>
+                </button>
                 <pre className=" overflow-scroll editscroll p-2.5 w-full text-sm  rounded-lg border  bg-gray-700 border-gray-600 h-72 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0">
-                   {output}
+                   {output.output}
                   <div className='flex justify-center mt-6'>
                   <ClipLoader
                     color={"white"}
