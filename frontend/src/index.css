@@ -4,6 +4,9 @@
 input[type="range"] {
     accent-color: white;
   }
+  body{
+    background-color: rgb(32, 56, 78);
+  }
   .editscroll::-webkit-scrollbar {
     width: 12px;               /* width of the entire scrollbar */
   }
@@ -16,4 +19,12 @@ input[type="range"] {
     background-image: linear-gradient(to right, rgba(130, 94, 175, 0), rgb(82, 114, 163));    /* color of the scroll thumb */
     border-radius: 20px;       /* roundness of the scroll thumb */
     border: 3px solid beige;  /* creates padding around scroll thumb */
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: orange;    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid beige;  /* creates padding around scroll thumb */
+  }
+  html{
+    scroll-behavior: smooth;
   }

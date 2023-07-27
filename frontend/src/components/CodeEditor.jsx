@@ -27,12 +27,16 @@ const CodeEditor = () => {
         { value: "javascript", label: "Javascript",default:"js" }
     ];
     const textSizeOptions = [10,12,16,20,24,28,32,36,40,44];
+    const setLocal = (key,value)=>{
+        localStorage.setItem(key,value);
+    }
     const compileCode = (code)=>{
+        window.location.replace('#terminal');
         setOutputLoading(true);
         setOutput('');
         console.log({code:code,language:language,input:input});
         //https://api-compile.onrender.com/api/v1/compile
-        fetch('http://localhost:5000/api/v1/compile', {
+        fetch('https://api-compile.onrender.com/api/v1/compile', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -52,20 +56,30 @@ const CodeEditor = () => {
     const  [input,setInput] = useState('')
     const  [output,setOutput] = useState('')
     const  [fontSize,setFontSize] = useState(16) 
-    const  [language,setLanguage] = useState('java')
+    const  [language,setLanguage] = useState(localStorage.getItem('language') || 'c++')
     const  [outputLoading, setOutputLoading] = useState(false);
+    
     return (
-        <div className='flex flex-wrap justify-normal bg-gray-800 h-full'>
+        <div className='flex flex-wrap   justify-normal  '>
           <div className='w-full  md:w-2/3'>
           <div >
-            <select value={theme}  onChange={(e)=>setTheme(e.target.value)}
+            <select value={theme}  onChange={(e)=>{
+                setTheme(e.target.value);
+                setLocal('editorTheme',e.target.value)
+               }
+              }
              className='bg-sky-900 text-orange-100 m-2 p-2'
             >
                {compilerThemes.map((elem,key)=>{
                   return(<option value={elem.value}>{elem.label}</option>)
                })}
             </select>
-            <select value={language} onChange={(e)=>setLanguage(e.target.value)}
+            <select value={language} onChange={(e)=>
+             {
+              setLanguage(e.target.value);
+              setLocal('language',e.target.value);
+             }
+            }
              className='bg-sky-900 text-orange-100 m-2 p-2'
             >
             {
@@ -97,7 +111,7 @@ const CodeEditor = () => {
                 fontSize:Number(fontSize),
             }}
             onMount={handleEditorDidMount}
-            height="610px"
+            className='h-[90%]'
             language={language}
           /> 
           </div>
@@ -107,9 +121,9 @@ const CodeEditor = () => {
                 <button onClick={showValue} className=' bg-cyan-950  border-white border-[0.25px] hover:bg-gray-600 text-teal-200 rounded-md p-1 m-2'>
                     RUN
                 </button>
-                <textarea value={input} rows="14" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm    bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0"/>
+                <textarea value={input} rows="12" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm    bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0"/>
             </div>
-            <div className='w-full mt-2'>
+            <div id='terminal' className='w-full mt-2'>
                 <label className="inline mb-2 text-sm font-medium text-white ">OUTPUT {output && ` [${output.runtime} ms]`}</label>
                 <button title="Copy Output" onClick={()=>navigator.clipboard.writeText(output.output)} className=' float-right hover:bg-gray-700 p-2 rounded-lg'>
                    <img src={copyIcon}/>
@@ -121,7 +135,7 @@ const CodeEditor = () => {
                     color={"white"}
                     loading={outputLoading}
                     className=''
-                    size={100}
+                    size={50}
                     aria-label="Loading Spinner"
                     data-testid="loader"
                     />
