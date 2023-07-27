@@ -32,7 +32,7 @@ const CodeEditor = () => {
         setOutput('');
         console.log({code:code,language:language,input:input});
         //https://api-compile.onrender.com/api/v1/compile
-        fetch('http://localhost:5000/api/v1/compile', {
+        fetch('https://api-compile.onrender.com/api/v1/compile', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
