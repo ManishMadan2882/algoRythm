@@ -3,7 +3,7 @@ import CodeEditor from '../components/CodeEditor'
 const Playground = () => {
   return (
     <div>
-        <CodeEditor/>
+        <CodeEditor />
     </div>
   )
 }
