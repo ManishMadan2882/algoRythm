@@ -16,16 +16,22 @@ async function compile(req,res)
         javascript:".js"
        }
 
-        tmp.file({prefix: 'project', postfix: extensions[language], keep: true},async  function (err, path, fd, cleanupCallback) {
+        tmp.file({prefix: 'project', postfix: extensions[language], tmpdir:'./'},async  function (err, path, fd, cleanupCallback) {
   
             if (err) throw err;
-                 
+         
        console.log("File: ", path);
        console.log("Filedescriptor: ", fd);
-       fs.writeFile(path, code, () => console.log('written file'))
-      
+        if(language === 'java')
+        {
+            fs.rename(path,__dirname+'/Main.java',()=>console.log('renamed')) 
+            fs.writeFile('Main.java', code, () => console.log('written file'))
+        }
+        else
+          fs.writeFile(path, code, () => console.log('written file'))
+       console.log(__dirname);
        const commands = {
-        java:`javac ${path} && java ${path}`,
+        java:`javac Main.java  && java Main`,
         cpp:`g++ ${path} -o outputCPP && ./outputCPP`,
         c:`gcc ${path} -o outputC && ./outputC`,
         cs:`mcs ${path} && mono ${path.substring(0,path.length-3)}.exe`,
@@ -44,7 +50,11 @@ async function compile(req,res)
       // Write the input to the child process
       child.stdin.write(input);
       // End the input stream
+      if(language === 'java')
+      fs.rm('Main.class',()=>console.log('deleted class java'));
+
       child.stdin.end(); 
+      
 });
 }
 
