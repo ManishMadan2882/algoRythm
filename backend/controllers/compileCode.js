@@ -16,7 +16,7 @@ async function compile(req,res)
         javascript:".js"
        }
 
-        tmp.file({prefix: 'project', postfix: extensions[language], tmpdir:'./'},async  function (err, path, fd, cleanupCallback) {
+        tmp.file({prefix: 'project', postfix: extensions[language]},async  function (err, path, fd, cleanupCallback) {
   
             if (err) throw err;
          
@@ -54,8 +54,8 @@ async function compile(req,res)
       fs.rm('Main.class',()=>console.log('deleted class java'));
 
       child.stdin.end(); 
+
       
-      cleanupCallback();
 });
 }
 
