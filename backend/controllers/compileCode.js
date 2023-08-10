@@ -55,6 +55,7 @@ async function compile(req,res)
 
       child.stdin.end(); 
       
+      cleanupCallback();
 });
 }
 
