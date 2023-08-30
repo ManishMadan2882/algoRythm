@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     default-jdk \
     default-jre \
     g++ \
+    gcc \
     mono-complete
 
 # Set the working directory
