@@ -1,6 +1,7 @@
 import React from 'react'
 import copyIcon from '../assets/icons8-copy-24.png'
 import { Editor } from '@monaco-editor/react';
+import terminal from "../assets/terminal.svg"
 import ClipLoader from "react-spinners/ClipLoader";
 import { useState,useRef } from 'react';
 const CodeEditor = () => {
@@ -59,15 +60,15 @@ const CodeEditor = () => {
     const  [outputLoading, setOutputLoading] = useState(false);
     
     return (
-        <div className='flex flex-wrap   justify-normal  '>
+        <div className='flex flex-wrap bg-chinese-black  justify-normal  '>
           <div className='w-full  lg:w-2/3'>
-          <div >
+          <div className='flex justify-start gap-4 my-4'>
             <select value={theme}  onChange={(e)=>{
                 setTheme(e.target.value);
                 setLocal('editorTheme',e.target.value)
                }
               }
-             className='bg-sky-900 text-orange-100 m-2 p-2'
+             className='px-4 py-3 text-base border outline-none rounded-md bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500'
             >
                {compilerThemes.map((elem,key)=>{
                   return(<option value={elem.value}>{elem.label}</option>)
@@ -79,7 +80,7 @@ const CodeEditor = () => {
               setLocal('language',e.target.value);
              }
             }
-             className='bg-sky-900 text-orange-100 m-2 p-2'
+             className='px-4 py-3 text-base border outline-none rounded-md bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500'
             >
             {
                 languages.map((elem,key)=>{
@@ -90,7 +91,7 @@ const CodeEditor = () => {
             }
             </select>
             <select value={fontSize} onChange={(e)=>setFontSize(e.target.value)}
-             className='bg-sky-900 text-orange-100 m-2 px-5 py-2'
+             className='px-4 py-3 text-base border outline-none rounded-md bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500'
             >
             {
                 textSizeOptions.map((elem,key)=>{
@@ -112,24 +113,26 @@ const CodeEditor = () => {
                 fontSize:Number(fontSize),
             }}
             onMount={handleEditorDidMount}
-            className='h-[90%]'
+            className='h-[85vh] z-30'
             language={language}
           /> 
           </div>
-          <div className='w-full  lg:w-1/3 p-2'>
-            <div className='w-full ' >
+          <div className='flex flex-col relative justify-center lg:w-1/3 p-2'>
+
+      <div className="w-[75vw] h-[75vw] md:w-[422px] md:h-[422px] z-0 pointer-events-none absolute top-0 left-0 block mx-auto blur-3xl bg-[#BE3AFC1A] rounded-full"></div>
+
+      <div className="w-[75vw] h-[75vw] md:w-[422px] md:h-[422px] z-0 pointer-events-none absolute bottom-0 right-0 block mx-auto blur-3xl bg-blueberry rounded-full"></div>
+            <div className='w-full z-30' >
                 <label className="mb-2 text-sm font-medium inline text-white">INPUT</label>
-                <button onClick={showValue} className=' bg-cyan-950  border-white border-[0.25px] hover:bg-gray-600 text-teal-200 rounded-md p-1 m-2'>
-                    RUN
-                </button>
-                <textarea value={input} rows="12" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm    bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0"/>
+                <img width={36} src={terminal} onClick={showValue} className='text-teal-200 rounded-md inline mx-4 hover:opacity-60 transition-opacity duration-150 cursor-pointer filter invert'/>
+                <textarea value={input} rows="12" onChange={(e)=>setInput(e.target.value)} className=" resize-none block w-full p-2.5 text-sm  rounded-lg  bg-dark-charcoal border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0"/>
             </div>
-            <div id='terminal' className='w-full mt-2'>
+            <div id='terminal' className='w-full mt-2 z-30'>
                 <label className="inline mb-2 text-sm font-medium text-white ">OUTPUT {output && ` [${output.runtime} ms]`}</label>
                 <button title="Copy Output" onClick={()=>navigator.clipboard.writeText(output.output)} className=' float-right hover:bg-gray-700 p-2 rounded-lg'>
                    <img src={copyIcon}/>
                 </button>
-                <pre className=" overflow-scroll editscroll p-2.5 w-full text-sm  rounded-lg border  bg-gray-700 border-gray-600 h-72 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0">
+                <pre className=" overflow-scroll editscroll p-2.5 w-full text-sm  rounded-lg border  bg-dark-charcoal border-gray-600 h-72 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Testcase 0">
                    {output.output}
                   <div className='flex justify-center mt-6'>
                   <ClipLoader

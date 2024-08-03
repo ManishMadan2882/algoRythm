@@ -4,8 +4,9 @@
 input[type="range"] {
     accent-color: white;
   }
-  body{
-    background-color: rgb(32, 56, 78);
+
+  textarea{
+    outline: none;
   }
   .editscroll::-webkit-scrollbar {
     width: 12px;               /* width of the entire scrollbar */
