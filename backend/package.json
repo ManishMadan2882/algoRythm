@@ -1,13 +1,13 @@
 {
-  "scripts":{
+  "scripts": {
     "start": "node server.js",
-    "monitor":"nodemon server.js"
+    "monitor": "nodemon server.js"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.13.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "tmp": "^0.2.1"
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "tmp": "^0.2.5"
   }
 }
