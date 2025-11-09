@@ -111,7 +111,8 @@ class Main {
     }
   };
 
-  const switchLanguageWithChanges = () => {
+  const keepMyCode = () => {
+    // Change language but keep the existing code
     if (pendingLanguage) {
       setLanguage(pendingLanguage);
       setLocal("language", pendingLanguage);
@@ -120,8 +121,13 @@ class Main {
     setShowLanguageWarning(false);
   };
 
-  const switchLanguageWithoutChanges = () => {
+  const discardAndLoadTemplate = () => {
+    // Change language and reset to default template
     if (pendingLanguage) {
+      // Clear the editor first to trigger reset
+      if (editorRef.current) {
+        editorRef.current.setValue(getDefaultCode(pendingLanguage));
+      }
       setLanguage(pendingLanguage);
       setLocal("language", pendingLanguage);
       setPendingLanguage(null);
@@ -190,7 +196,6 @@ class Main {
           onMount={handleEditorDidMount}
           className="h-[50vh] lg:h-[calc(90vh-60px)] z-30"
           language={language}
-          key={language}
         />
       </div>
       <div className="flex flex-col relative w-full lg:w-1/3 p-2 h-[50vh] lg:h-[90vh] lg:border-l border-gray-600">
@@ -268,13 +273,13 @@ class Main {
             </p>
             <div className="space-y-3">
               <button
-                onClick={switchLanguageWithChanges}
+                onClick={keepMyCode}
                 className="w-full px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
               >
                 Keep My Code
               </button>
               <button
-                onClick={switchLanguageWithoutChanges}
+                onClick={discardAndLoadTemplate}
                 className="w-full px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors text-sm"
               >
                 Discard & Load Template
