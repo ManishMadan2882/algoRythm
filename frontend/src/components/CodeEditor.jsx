@@ -1,7 +1,7 @@
 import copyIcon from "../assets/icons8-copy-24.png";
 import { Editor } from "@monaco-editor/react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -98,6 +98,32 @@ class Main {
     localStorage.getItem("language") || "cpp"
   );
   const [outputLoading, setOutputLoading] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState(null);
+  const [showLanguageWarning, setShowLanguageWarning] = useState(false);
+
+  const handleLanguageChange = (newLanguage) => {
+    if (editorRef.current && editorRef.current.getValue().trim() !== "") {
+      setPendingLanguage(newLanguage);
+      setShowLanguageWarning(true);
+    } else {
+      setLanguage(newLanguage);
+      setLocal("language", newLanguage);
+    }
+  };
+
+  const confirmLanguageChange = () => {
+    if (pendingLanguage) {
+      setLanguage(pendingLanguage);
+      setLocal("language", pendingLanguage);
+      setPendingLanguage(null);
+    }
+    setShowLanguageWarning(false);
+  };
+
+  const cancelLanguageChange = () => {
+    setPendingLanguage(null);
+    setShowLanguageWarning(false);
+  };
 
   return (
     <div className="flex flex-col lg:flex-row bg-chinese-black justify-normal">
@@ -121,10 +147,7 @@ class Main {
           </select>
           <select
             value={language}
-            onChange={(e) => {
-              setLanguage(e.target.value);
-              setLocal("language", e.target.value);
-            }}
+            onChange={(e) => handleLanguageChange(e.target.value)}
             className="px-4 py-3 text-base border outline-none rounded-md bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
           >
             {languages.map((elem, key) => {
@@ -227,6 +250,30 @@ class Main {
           </pre>
         </div>
       </div>
+      {showLanguageWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-sm mx-4 border border-gray-600">
+            <h2 className="text-lg font-semibold text-white mb-2">Switch Language?</h2>
+            <p className="text-gray-300 mb-6">
+              You have unsaved code. Switching languages will replace it with the default template for the new language.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelLanguageChange}
+                className="px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLanguageChange}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                Switch Language
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
