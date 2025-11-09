@@ -1,6 +1,5 @@
 import copyIcon from "../assets/icons8-copy-24.png";
 import { Editor } from "@monaco-editor/react";
-import terminal from "../assets/terminal.svg";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useState, useRef } from "react";
 const CodeEditor = () => {
@@ -137,8 +136,6 @@ const CodeEditor = () => {
               INPUT
             </label>
             <button
-              width={36}
-              src={terminal}
               onClick={showValue}
               className="text-stone-200 bg-teal-900 px-3 py-1 rounded-md hover:opacity-60 transition-opacity duration-150 cursor-pointer text-sm"
             >Run</button>
