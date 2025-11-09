@@ -37,7 +37,8 @@ function handleCompileSocket(socket) {
     }
 
     try {
-      tmp.file({ prefix: 'project', postfix: extensions[language] }, async (err, path, fd, cleanupCallback) => {
+      // Create a temporary directory for this compilation
+      tmp.dir({ unsafeCleanup: true }, async (err, tmpDir, cleanupCallback) => {
         if (err) {
           socket.emit('compile:error', { error: err.message });
           socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
@@ -45,11 +46,12 @@ function handleCompileSocket(socket) {
         }
 
         try {
-          // Write code to file
+          // Write code to file in the temporary directory
           if (language === 'java') {
-            fs.writeFileSync('Main.java', code);
-            // Compile Java
-            const compileProcess = spawn('javac', ['Main.java']);
+            const javaFilePath = `${tmpDir}/Main.java`;
+            fs.writeFileSync(javaFilePath, code);
+            // Compile Java in the temporary directory
+            const compileProcess = spawn('javac', ['Main.java'], { cwd: tmpDir });
             compileProcess.on('close', (code) => {
               if (code !== 0) {
                 socket.emit('compile:error', { error: 'Compilation failed' });
@@ -57,11 +59,12 @@ function handleCompileSocket(socket) {
                 cleanupCallback();
                 return;
               }
-              startExecution(socket, language, path, cleanupCallback);
+              startExecution(socket, language, tmpDir, cleanupCallback);
             });
           } else {
-            fs.writeFileSync(path, code);
-            compileAndExecute(socket, language, path, cleanupCallback);
+            const filePath = `${tmpDir}/source${extensions[language]}`;
+            fs.writeFileSync(filePath, code);
+            compileAndExecute(socket, language, filePath, tmpDir, cleanupCallback);
           }
         } catch (error) {
           socket.emit('compile:error', { error: error.message });
@@ -95,10 +98,10 @@ function handleCompileSocket(socket) {
   });
 }
 
-function compileAndExecute(socket, language, path, cleanupCallback) {
-  const cmd = commands[language];
+function compileAndExecute(socket, language, path, tmpDir, cleanupCallback) {
+  const outputName = language === 'cpp' ? 'outputCPP' : 'outputC';
   const args = language === 'cpp' || language === 'c'
-    ? [path, '-o', language === 'cpp' ? 'outputCPP' : 'outputC']
+    ? [path, '-o', `${tmpDir}/${outputName}`]
     : [path];
 
   const compileCmd = language === 'cpp' ? 'g++' : language === 'c' ? 'gcc' : language === 'cs' ? 'mcs' : cmd.cmd;
@@ -112,25 +115,26 @@ function compileAndExecute(socket, language, path, cleanupCallback) {
       cleanupCallback();
       return;
     }
-    startExecution(socket, language, path, cleanupCallback);
+    startExecution(socket, language, tmpDir, cleanupCallback);
   });
 }
 
-function startExecution(socket, language, path, cleanupCallback) {
+function startExecution(socket, language, tmpDir, cleanupCallback) {
   const cmd = commands[language];
-  const args = language === 'cpp' || language === 'c' 
+
+  const args = language === 'cpp' || language === 'c'
     ? []
     : language === 'cs'
     ? ['output.exe']
     : language === 'java'
     ? ['Main']
-    : [path];
+    : ['source' + extensions[language]];
 
   const execCmd = language === 'cpp' ? './outputCPP' : language === 'c' ? './outputC' : language === 'cs' ? 'mono' : language === 'java' ? 'java' : cmd.cmd;
 
   const initialTime = Date.now();
-  const childProcess = spawn(execCmd, args);
-  
+  const childProcess = spawn(execCmd, args, { cwd: tmpDir });
+
   socket.childProcess = childProcess;
   socket.emit('compile:ready');
 
@@ -148,11 +152,8 @@ function startExecution(socket, language, path, cleanupCallback) {
   childProcess.on('close', (code) => {
     const runtime = Date.now() - initialTime;
     socket.emit('compile:complete', { output, runtime, exitCode: code });
-    
-    // Cleanup
-    if (language === 'java') {
-      fs.rm('Main.class', () => {});
-    }
+
+    // Cleanup temporary directory
     cleanupCallback();
   });
 }
