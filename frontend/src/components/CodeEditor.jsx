@@ -1,7 +1,7 @@
 import copyIcon from "../assets/icons8-copy-24.png";
 import { Editor } from "@monaco-editor/react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -29,6 +29,42 @@ const CodeEditor = () => {
     { value: "javascript", label: "Javascript", default: "js" },
   ];
   const textSizeOptions = [10, 12, 16, 20, 24, 28, 32, 36, 40, 44];
+
+  const getDefaultCode = (lang) => {
+    const templates = {
+      c: `#include <stdio.h>
+
+int main() {
+    // Your code here
+    return 0;
+}`,
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Your code here
+    return 0;
+}`,
+      cs: `using System;
+
+class Program {
+    static void Main() {
+        // Your code here
+    }
+}`,
+      python: `# Your code here`,
+      java: `import java.util.*;
+
+class Main {
+    public static void main(String args[]) {
+        // Your code here
+    }
+}`,
+      javascript: `// Your code here`,
+    };
+    return templates[lang] || "// Your code here";
+  };
+
   const setLocal = (key, value) => {
     localStorage.setItem(key, value);
   };
@@ -62,6 +98,47 @@ const CodeEditor = () => {
     localStorage.getItem("language") || "cpp"
   );
   const [outputLoading, setOutputLoading] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState(null);
+  const [showLanguageWarning, setShowLanguageWarning] = useState(false);
+
+  const handleLanguageChange = (newLanguage) => {
+    if (editorRef.current && editorRef.current.getValue().trim() !== "") {
+      setPendingLanguage(newLanguage);
+      setShowLanguageWarning(true);
+    } else {
+      setLanguage(newLanguage);
+      setLocal("language", newLanguage);
+    }
+  };
+
+  const keepMyCode = () => {
+    // Change language but keep the existing code
+    if (pendingLanguage) {
+      setLanguage(pendingLanguage);
+      setLocal("language", pendingLanguage);
+      setPendingLanguage(null);
+    }
+    setShowLanguageWarning(false);
+  };
+
+  const discardAndLoadTemplate = () => {
+    // Change language and reset to default template
+    if (pendingLanguage) {
+      // Clear the editor first to trigger reset
+      if (editorRef.current) {
+        editorRef.current.setValue(getDefaultCode(pendingLanguage));
+      }
+      setLanguage(pendingLanguage);
+      setLocal("language", pendingLanguage);
+      setPendingLanguage(null);
+    }
+    setShowLanguageWarning(false);
+  };
+
+  const cancelLanguageChange = () => {
+    setPendingLanguage(null);
+    setShowLanguageWarning(false);
+  };
 
   return (
     <div className="flex flex-col lg:flex-row bg-chinese-black justify-normal">
@@ -85,10 +162,7 @@ const CodeEditor = () => {
           </select>
           <select
             value={language}
-            onChange={(e) => {
-              setLanguage(e.target.value);
-              setLocal("language", e.target.value);
-            }}
+            onChange={(e) => handleLanguageChange(e.target.value)}
             className="px-4 py-3 text-base border outline-none rounded-md bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500"
           >
             {languages.map((elem, key) => {
@@ -115,11 +189,7 @@ const CodeEditor = () => {
         </div>
         <Editor
           theme={theme}
-          defaultValue={
-            language === "python"
-              ? "## Write Code here"
-              : "/* Write Code here */"
-          }
+          defaultValue={getDefaultCode(language)}
           options={{
             fontSize: Number(fontSize),
           }}
@@ -194,6 +264,36 @@ const CodeEditor = () => {
           </pre>
         </div>
       </div>
+      {showLanguageWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-gray-600">
+            <h2 className="text-lg font-semibold text-white mb-2">Switch Language?</h2>
+            <p className="text-gray-300 mb-6">
+              You have unsaved code. What would you like to do?
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={keepMyCode}
+                className="w-full px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
+              >
+                Keep My Code
+              </button>
+              <button
+                onClick={discardAndLoadTemplate}
+                className="w-full px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors text-sm"
+              >
+                Discard & Load Template
+              </button>
+              <button
+                onClick={cancelLanguageChange}
+                className="w-full px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
