@@ -9,17 +9,20 @@ input[type="range"] {
     outline: none;
   }
   .editscroll::-webkit-scrollbar {
-    width: 12px;               /* width of the entire scrollbar */
+    width: 6px;
   }
-  
+
   .editscroll::-webkit-scrollbar-track {
-    background: gray;        /* color of the tracking area */
+    background: transparent;
   }
 
   .editscroll::-webkit-scrollbar-thumb {
-    background-image: linear-gradient(to right, rgba(130, 94, 175, 0), rgb(82, 114, 163));    /* color of the scroll thumb */
-    border-radius: 20px;       /* roundness of the scroll thumb */
-    border: 3px solid beige;  /* creates padding around scroll thumb */
+    background: #666;
+    border-radius: 3px;
+  }
+
+  .editscroll::-webkit-scrollbar-thumb:hover {
+    background: #888;
   }
 
   html{
