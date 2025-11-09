@@ -2,6 +2,7 @@ import copyIcon from "../assets/icons8-copy-24.png";
 import { Editor } from "@monaco-editor/react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useState, useRef, useEffect } from "react";
+import { io } from "socket.io-client";
 const CodeEditor = () => {
   const editorRef = useRef(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -68,38 +69,61 @@ class Main {
   const setLocal = (key, value) => {
     localStorage.setItem(key, value);
   };
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize socket connection
+    const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
+    socketRef.current = io(SOCKET_SERVER);
+
+    socketRef.current.on("compile:ready", () => {
+      setTerminalOutput((prev) => prev + "\n[Program started]\n");
+      setIsRunning(true);
+    });
+
+    socketRef.current.on("compile:output", (data) => {
+      setTerminalOutput((prev) => prev + data.output);
+    });
+
+    socketRef.current.on("compile:error", (data) => {
+      setTerminalOutput((prev) => prev + `\n[Error] ${data.error}\n`);
+    });
+
+    socketRef.current.on("compile:complete", (data) => {
+      setTerminalOutput((prev) => prev + `\n[Program completed in ${data.runtime}ms]\n`);
+      setIsRunning(false);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
   const compileCode = (code) => {
-    setOutputLoading(true);
-    setOutput("");
-    console.log({ code: code, language: language, input: input });
-    //https://api-compile.onrender.com/api/v1/compile
-    fetch("https://api-compile.onrender.com/api/v1/compile", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ code: code, language: language, input: input }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setOutput(data);
-      })
-      .catch((error) => console.error(error))
-      .finally(() => setOutputLoading(false));
+    setTerminalOutput("");
+    setIsRunning(true);
+    if (socketRef.current) {
+      socketRef.current.emit("compile:start", {
+        code: code,
+        language: language,
+      });
+    }
   };
   const [theme, setTheme] = useState(
     localStorage.getItem("editorTheme") || "vs-dark"
   );
-  const [input, setInput] = useState("");
-  const [output, setOutput] = useState("");
+  const [terminalInput, setTerminalInput] = useState("");
+  const [terminalOutput, setTerminalOutput] = useState("");
   const [fontSize, setFontSize] = useState(16);
   const [language, setLanguage] = useState(
     localStorage.getItem("language") || "cpp"
   );
-  const [outputLoading, setOutputLoading] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [pendingLanguage, setPendingLanguage] = useState(null);
   const [showLanguageWarning, setShowLanguageWarning] = useState(false);
+  const terminalEndRef = useRef(null);
 
   const handleLanguageChange = (newLanguage) => {
     if (editorRef.current && editorRef.current.getValue().trim() !== "") {
@@ -138,6 +162,30 @@ class Main {
   const cancelLanguageChange = () => {
     setPendingLanguage(null);
     setShowLanguageWarning(false);
+  };
+
+  // Auto-scroll terminal to bottom
+  useEffect(() => {
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [terminalOutput]);
+
+  const handleTerminalInput = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (socketRef.current && terminalInput.trim()) {
+        socketRef.current.emit("compile:input", { input: terminalInput });
+        setTerminalOutput((prev) => prev + terminalInput + "\n");
+        setTerminalInput("");
+      }
+    }
+  };
+
+  const handleTerminalEnd = () => {
+    if (socketRef.current) {
+      socketRef.current.emit("compile:end");
+    }
   };
 
   return (
@@ -202,66 +250,84 @@ class Main {
         <div className="w-[75vw] h-[75vw] md:w-[422px] md:h-[422px] z-0 pointer-events-none absolute top-0 left-0 block mx-auto blur-3xl bg-[#BE3AFC1A] rounded-full"></div>
 
         <div className="w-[75vw] h-[75vw] md:w-[422px] md:h-[422px] z-0 pointer-events-none absolute bottom-0 right-0 block mx-auto blur-3xl bg-blueberry rounded-full"></div>
-        <div className="w-full h-1/2 z-30 flex flex-col">
+        <div id="terminal" className="w-full h-full z-30 flex flex-col">
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-white">
-              INPUT
+              TERMINAL
             </label>
-            <button
-              onClick={showValue}
-              disabled={!isEditorReady}
-              className={`px-3 py-1 rounded-md transition-opacity duration-150 text-sm ${
-                isEditorReady
-                  ? "text-stone-200 bg-teal-900 hover:opacity-60 cursor-pointer"
-                  : "text-gray-500 bg-gray-700 cursor-not-allowed opacity-50"
-              }`}
-            >Run</button>
-          </div>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className=" resize-none flex-1 w-full p-2.5 text-sm  rounded-lg  bg-dark-charcoal border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Testcase 0"
-          />
-        </div>
-        <div id="terminal" className="w-full h-1/2 z-30 flex flex-col mt-4">
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-sm font-medium text-white">
-              OUTPUT {output?.runtime && ` [${output.runtime} ms]`}
-            </label>
-            <button
-              title="Copy Output"
-              onClick={() => {
-                if (output?.output) {
-                  navigator.clipboard.writeText(output.output);
-                }
-              }}
-              disabled={!output?.output}
-              className={`p-2 rounded-lg ${
-                output?.output
-                  ? "hover:bg-gray-700 cursor-pointer"
-                  : "cursor-not-allowed opacity-50"
-              }`}
-            >
-              <img src={copyIcon} />
-            </button>
-          </div>
-          <pre
-            className=" overflow-scroll editscroll p-2.5 flex-1 w-full text-sm  rounded-lg border  bg-dark-charcoal border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Testcase 0"
-          >
-            {output.output}
-            <div className="flex justify-center mt-6">
-              <ClipLoader
-                color={"white"}
-                loading={outputLoading}
-                className=""
-                size={50}
-                aria-label="Loading Spinner"
-                data-testid="loader"
-              />
+            <div className="flex gap-2">
+              <button
+                onClick={showValue}
+                disabled={!isEditorReady || isRunning}
+                className={`px-3 py-1 rounded-md transition-opacity duration-150 text-sm ${
+                  isEditorReady && !isRunning
+                    ? "text-stone-200 bg-teal-900 hover:opacity-60 cursor-pointer"
+                    : "text-gray-500 bg-gray-700 cursor-not-allowed opacity-50"
+                }`}
+              >
+                {isRunning ? "Running..." : "Run"}
+              </button>
+              <button
+                onClick={handleTerminalEnd}
+                disabled={!isRunning}
+                className={`px-3 py-1 rounded-md transition-opacity duration-150 text-sm ${
+                  isRunning
+                    ? "text-stone-200 bg-red-900 hover:opacity-60 cursor-pointer"
+                    : "text-gray-500 bg-gray-700 cursor-not-allowed opacity-50"
+                }`}
+              >
+                Stop
+              </button>
+              <button
+                title="Copy Output"
+                onClick={() => {
+                  if (terminalOutput) {
+                    navigator.clipboard.writeText(terminalOutput);
+                  }
+                }}
+                disabled={!terminalOutput}
+                className={`p-2 rounded-lg ${
+                  terminalOutput
+                    ? "hover:bg-gray-700 cursor-pointer"
+                    : "cursor-not-allowed opacity-50"
+                }`}
+              >
+                <img src={copyIcon} />
+              </button>
             </div>
-          </pre>
+          </div>
+
+          <div className="flex-1 overflow-y-auto editscroll bg-dark-charcoal rounded-lg border border-gray-600 p-2.5 mb-2">
+            <pre className="text-sm text-white font-mono whitespace-pre-wrap break-words">
+              {terminalOutput}
+              {isRunning && (
+                <div className="flex items-center gap-2 mt-2">
+                  <ClipLoader
+                    color={"white"}
+                    loading={true}
+                    size={20}
+                    aria-label="Loading Spinner"
+                  />
+                  <span>Running...</span>
+                </div>
+              )}
+              <div ref={terminalEndRef} />
+            </pre>
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={terminalInput}
+              onChange={(e) => setTerminalInput(e.target.value)}
+              onKeyDown={handleTerminalInput}
+              placeholder="Enter input (Press Enter to send)"
+              disabled={!isRunning}
+              className={`flex-1 px-3 py-2 rounded-lg text-sm bg-dark-charcoal border border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 ${
+                !isRunning ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            />
+          </div>
         </div>
       </div>
       {showLanguageWarning && (
