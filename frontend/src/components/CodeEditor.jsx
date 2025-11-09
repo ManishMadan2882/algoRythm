@@ -157,7 +157,7 @@ const CodeEditor = () => {
         <div id="terminal" className="w-full h-1/2 z-30 flex flex-col mt-4">
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-white">
-              OUTPUT {output && ` [${output.runtime} ms]`}
+              OUTPUT {output?.runtime && ` [${output.runtime} ms]`}
             </label>
             <button
               title="Copy Output"
