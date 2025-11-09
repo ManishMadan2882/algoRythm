@@ -48,10 +48,9 @@ const CodeEditor = () => {
       .then((data) => {
         console.log(data);
         setOutput(data);
-
-        setOutputLoading(false);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error(error))
+      .finally(() => setOutputLoading(false));
   };
   const [theme, setTheme] = useState(
     localStorage.getItem("editorTheme") || "vs-dark"
