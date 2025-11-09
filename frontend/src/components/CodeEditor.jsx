@@ -77,22 +77,34 @@ class Main {
     const SOCKET_SERVER = import.meta.env.VITE_SOCKET_SERVER || "http://localhost:5000";
     socketRef.current = io(SOCKET_SERVER);
 
+    socketRef.current.on("connect", () => {
+      console.log("Socket connected");
+    });
+
     socketRef.current.on("compile:ready", () => {
+      console.log("Compile ready");
       setTerminalOutput((prev) => prev + "\n[Program started]\n");
       setIsRunning(true);
     });
 
     socketRef.current.on("compile:output", (data) => {
+      console.log("Compile output:", data);
       setTerminalOutput((prev) => prev + data.output);
     });
 
     socketRef.current.on("compile:error", (data) => {
+      console.log("Compile error:", data);
       setTerminalOutput((prev) => prev + `\n[Error] ${data.error}\n`);
     });
 
     socketRef.current.on("compile:complete", (data) => {
+      console.log("Compile complete:", data);
       setTerminalOutput((prev) => prev + `\n[Program completed in ${data.runtime}ms]\n`);
       setIsRunning(false);
+    });
+
+    socketRef.current.on("disconnect", () => {
+      console.log("Socket disconnected");
     });
 
     return () => {
