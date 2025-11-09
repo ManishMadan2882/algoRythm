@@ -11,15 +11,6 @@ const extensions = {
   javascript: ".js"
 };
 
-const commands = {
-  java: { cmd: 'java', args: ['Main'] },
-  cpp: { cmd: './outputCPP', args: [] },
-  c: { cmd: './outputC', args: [] },
-  cs: { cmd: 'mono', args: ['output.exe'] },
-  python: { cmd: 'python', args: [] },
-  javascript: { cmd: 'node', args: [] }
-};
-
 function handleCompileSocket(socket) {
   socket.on('compile:start', async (data) => {
     const { code, language } = data;
@@ -99,12 +90,25 @@ function handleCompileSocket(socket) {
 }
 
 function compileAndExecute(socket, language, path, tmpDir, cleanupCallback) {
-  const outputName = language === 'cpp' ? 'outputCPP' : 'outputC';
-  const args = language === 'cpp' || language === 'c'
-    ? [path, '-o', `${tmpDir}/${outputName}`]
-    : [path];
+  const outputName = language === 'cpp' ? 'outputCPP' : language === 'c' ? 'outputC' : 'output.exe';
 
-  const compileCmd = language === 'cpp' ? 'g++' : language === 'c' ? 'gcc' : language === 'cs' ? 'mcs' : cmd.cmd;
+  let args;
+  let compileCmd;
+
+  if (language === 'cpp') {
+    compileCmd = 'g++';
+    args = [path, '-o', `${tmpDir}/${outputName}`];
+  } else if (language === 'c') {
+    compileCmd = 'gcc';
+    args = [path, '-o', `${tmpDir}/${outputName}`];
+  } else if (language === 'cs') {
+    compileCmd = 'mcs';
+    args = [path, '-out:' + `${tmpDir}/${outputName}`];
+  } else {
+    // For interpreted languages (python, javascript), no compilation needed
+    startExecution(socket, language, tmpDir, cleanupCallback);
+    return;
+  }
 
   const compileProcess = spawn(compileCmd, args);
 
@@ -120,17 +124,33 @@ function compileAndExecute(socket, language, path, tmpDir, cleanupCallback) {
 }
 
 function startExecution(socket, language, tmpDir, cleanupCallback) {
-  const cmd = commands[language];
+  let execCmd;
+  let args;
 
-  const args = language === 'cpp' || language === 'c'
-    ? []
-    : language === 'cs'
-    ? ['output.exe']
-    : language === 'java'
-    ? ['Main']
-    : ['source' + extensions[language]];
-
-  const execCmd = language === 'cpp' ? './outputCPP' : language === 'c' ? './outputC' : language === 'cs' ? 'mono' : language === 'java' ? 'java' : cmd.cmd;
+  if (language === 'cpp') {
+    execCmd = './outputCPP';
+    args = [];
+  } else if (language === 'c') {
+    execCmd = './outputC';
+    args = [];
+  } else if (language === 'cs') {
+    execCmd = 'mono';
+    args = ['output.exe'];
+  } else if (language === 'java') {
+    execCmd = 'java';
+    args = ['Main'];
+  } else if (language === 'python') {
+    execCmd = 'python';
+    args = ['source.py'];
+  } else if (language === 'javascript') {
+    execCmd = 'node';
+    args = ['source.js'];
+  } else {
+    socket.emit('compile:error', { error: 'Unsupported language for execution' });
+    socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
+    cleanupCallback();
+    return;
+  }
 
   const initialTime = Date.now();
   const childProcess = spawn(execCmd, args, { cwd: tmpDir });
