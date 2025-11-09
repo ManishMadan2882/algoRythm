@@ -4,12 +4,15 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { useState, useRef } from "react";
 const CodeEditor = () => {
   const editorRef = useRef(null);
+  const [isEditorReady, setIsEditorReady] = useState(false);
 
   function handleEditorDidMount(editor) {
     editorRef.current = editor;
+    setIsEditorReady(true);
   }
 
   function showValue() {
+    if (!editorRef.current) return;
     compileCode(editorRef.current.getValue());
   }
   const compilerThemes = [
@@ -137,7 +140,12 @@ const CodeEditor = () => {
             </label>
             <button
               onClick={showValue}
-              className="text-stone-200 bg-teal-900 px-3 py-1 rounded-md hover:opacity-60 transition-opacity duration-150 cursor-pointer text-sm"
+              disabled={!isEditorReady}
+              className={`px-3 py-1 rounded-md transition-opacity duration-150 text-sm ${
+                isEditorReady
+                  ? "text-stone-200 bg-teal-900 hover:opacity-60 cursor-pointer"
+                  : "text-gray-500 bg-gray-700 cursor-not-allowed opacity-50"
+              }`}
             >Run</button>
           </div>
           <textarea
