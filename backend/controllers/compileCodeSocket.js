@@ -26,11 +26,13 @@ function handleCompileSocket(socket) {
 
     if (!code || !language) {
       socket.emit('compile:error', { error: 'Code and language are required' });
+      socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
       return;
     }
 
     if (!extensions[language]) {
       socket.emit('compile:error', { error: 'Unsupported language' });
+      socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
       return;
     }
 
@@ -38,6 +40,7 @@ function handleCompileSocket(socket) {
       tmp.file({ prefix: 'project', postfix: extensions[language] }, async (err, path, fd, cleanupCallback) => {
         if (err) {
           socket.emit('compile:error', { error: err.message });
+          socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
           return;
         }
 
@@ -50,6 +53,7 @@ function handleCompileSocket(socket) {
             compileProcess.on('close', (code) => {
               if (code !== 0) {
                 socket.emit('compile:error', { error: 'Compilation failed' });
+                socket.emit('compile:complete', { output: '', runtime: 0, exitCode: code });
                 cleanupCallback();
                 return;
               }
@@ -61,11 +65,13 @@ function handleCompileSocket(socket) {
           }
         } catch (error) {
           socket.emit('compile:error', { error: error.message });
+          socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
           cleanupCallback();
         }
       });
     } catch (error) {
       socket.emit('compile:error', { error: error.message });
+      socket.emit('compile:complete', { output: '', runtime: 0, exitCode: 1 });
     }
   });
 
@@ -91,17 +97,18 @@ function handleCompileSocket(socket) {
 
 function compileAndExecute(socket, language, path, cleanupCallback) {
   const cmd = commands[language];
-  const args = language === 'cpp' || language === 'c' 
+  const args = language === 'cpp' || language === 'c'
     ? [path, '-o', language === 'cpp' ? 'outputCPP' : 'outputC']
     : [path];
 
   const compileCmd = language === 'cpp' ? 'g++' : language === 'c' ? 'gcc' : language === 'cs' ? 'mcs' : cmd.cmd;
-  
+
   const compileProcess = spawn(compileCmd, args);
-  
+
   compileProcess.on('close', (code) => {
     if (code !== 0) {
       socket.emit('compile:error', { error: 'Compilation failed' });
+      socket.emit('compile:complete', { output: '', runtime: 0, exitCode: code });
       cleanupCallback();
       return;
     }

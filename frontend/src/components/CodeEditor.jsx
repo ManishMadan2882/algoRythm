@@ -145,6 +145,10 @@ class Main {
     if (pendingLanguage) {
       setLanguage(pendingLanguage);
       setLocal("language", pendingLanguage);
+      // Update editor reference to reflect language change
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
       setPendingLanguage(null);
     }
     setShowLanguageWarning(false);
@@ -153,9 +157,16 @@ class Main {
   const discardAndLoadTemplate = () => {
     // Change language and reset to default template
     if (pendingLanguage) {
-      setEditorCode(getDefaultCode(pendingLanguage));
+      const newCode = getDefaultCode(pendingLanguage);
+      setEditorCode(newCode);
+      setLocal("editorCode", newCode);
       setLanguage(pendingLanguage);
       setLocal("language", pendingLanguage);
+      // Update editor reference to reflect language change
+      if (editorRef.current) {
+        editorRef.current.setValue(newCode);
+        editorRef.current.focus();
+      }
       setPendingLanguage(null);
     }
     setShowLanguageWarning(false);
@@ -187,7 +198,12 @@ class Main {
   const handleTerminalEnd = () => {
     if (socketRef.current) {
       socketRef.current.emit("compile:end");
+      // Force stop the program
+      socketRef.current.disconnect();
+      socketRef.current.connect();
     }
+    setIsRunning(false);
+    setTerminalOutput((prev) => prev + "\n[Program stopped by user]\n");
   };
 
   return (
@@ -239,7 +255,7 @@ class Main {
         </div>
         <Editor
           theme={theme}
-          value={editorCode}
+          defaultValue={editorCode}
           onChange={(value) => {
             setEditorCode(value || "");
             setLocal("editorCode", value || "");
@@ -251,10 +267,15 @@ class Main {
             automaticLayout: true,
             scrollBeyondLastLine: false,
             tabSize: 2,
+            formatOnPaste: true,
+            formatOnType: true,
+            bracketPairColorization: { enabled: true },
+            "bracketPairColorization.independentColorPoolPerBracketType": true,
           }}
           onMount={handleEditorDidMount}
           className="h-[50vh] lg:h-[calc(90vh-60px)] z-30"
           language={language}
+          key={`editor-${language}`}
         />
       </div>
       <div className="flex flex-col relative w-full lg:w-1/3 p-2 h-[50vh] lg:h-[90vh] lg:border-l border-gray-600">
