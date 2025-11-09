@@ -29,6 +29,42 @@ const CodeEditor = () => {
     { value: "javascript", label: "Javascript", default: "js" },
   ];
   const textSizeOptions = [10, 12, 16, 20, 24, 28, 32, 36, 40, 44];
+
+  const getDefaultCode = (lang) => {
+    const templates = {
+      c: `#include <stdio.h>
+
+int main() {
+    // Your code here
+    return 0;
+}`,
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Your code here
+    return 0;
+}`,
+      cs: `using System;
+
+class Program {
+    static void Main() {
+        // Your code here
+    }
+}`,
+      python: `# Your code here`,
+      java: `import java.util.*;
+
+class Main {
+    public static void main(String args[]) {
+        // Your code here
+    }
+}`,
+      javascript: `// Your code here`,
+    };
+    return templates[lang] || "// Your code here";
+  };
+
   const setLocal = (key, value) => {
     localStorage.setItem(key, value);
   };
@@ -115,17 +151,14 @@ const CodeEditor = () => {
         </div>
         <Editor
           theme={theme}
-          defaultValue={
-            language === "python"
-              ? "## Write Code here"
-              : "/* Write Code here */"
-          }
+          defaultValue={getDefaultCode(language)}
           options={{
             fontSize: Number(fontSize),
           }}
           onMount={handleEditorDidMount}
           className="h-[50vh] lg:h-[calc(90vh-60px)] z-30"
           language={language}
+          key={language}
         />
       </div>
       <div className="flex flex-col relative w-full lg:w-1/3 p-2 h-[50vh] lg:h-[90vh] lg:border-l border-gray-600">
