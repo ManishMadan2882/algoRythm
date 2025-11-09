@@ -111,7 +111,16 @@ class Main {
     }
   };
 
-  const confirmLanguageChange = () => {
+  const switchLanguageWithChanges = () => {
+    if (pendingLanguage) {
+      setLanguage(pendingLanguage);
+      setLocal("language", pendingLanguage);
+      setPendingLanguage(null);
+    }
+    setShowLanguageWarning(false);
+  };
+
+  const switchLanguageWithoutChanges = () => {
     if (pendingLanguage) {
       setLanguage(pendingLanguage);
       setLocal("language", pendingLanguage);
@@ -252,23 +261,29 @@ class Main {
       </div>
       {showLanguageWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-sm mx-4 border border-gray-600">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-gray-600">
             <h2 className="text-lg font-semibold text-white mb-2">Switch Language?</h2>
             <p className="text-gray-300 mb-6">
-              You have unsaved code. Switching languages will replace it with the default template for the new language.
+              You have unsaved code. What would you like to do?
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="space-y-3">
               <button
-                onClick={cancelLanguageChange}
-                className="px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+                onClick={switchLanguageWithChanges}
+                className="w-full px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm"
               >
-                Cancel
+                Keep My Code
               </button>
               <button
-                onClick={confirmLanguageChange}
-                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+                onClick={switchLanguageWithoutChanges}
+                className="w-full px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors text-sm"
               >
-                Switch Language
+                Discard & Load Template
+              </button>
+              <button
+                onClick={cancelLanguageChange}
+                className="w-full px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 transition-colors text-sm"
+              >
+                Cancel
               </button>
             </div>
           </div>
