@@ -162,8 +162,17 @@ const CodeEditor = () => {
             </label>
             <button
               title="Copy Output"
-              onClick={() => navigator.clipboard.writeText(output.output)}
-              className="hover:bg-gray-700 p-2 rounded-lg"
+              onClick={() => {
+                if (output?.output) {
+                  navigator.clipboard.writeText(output.output);
+                }
+              }}
+              disabled={!output?.output}
+              className={`p-2 rounded-lg ${
+                output?.output
+                  ? "hover:bg-gray-700 cursor-pointer"
+                  : "cursor-not-allowed opacity-50"
+              }`}
             >
               <img src={copyIcon} />
             </button>
