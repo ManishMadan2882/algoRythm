@@ -1,5 +1,5 @@
 # Use the Node.js base image
-FROM node:14
+FROM node:20
 
 # Install Python, Java, C++, C, C# dependencies
 RUN apt-get update && apt-get install -y \
