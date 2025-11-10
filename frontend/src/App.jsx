@@ -1,4 +1,3 @@
-import React from "react";
 import Playground from "./pages/Playground";
 import {DocsGPTWidget} from "docsgpt-react";
 import Navbar from "./components/Navbar";
