@@ -140,7 +140,7 @@ function startExecution(socket, language, tmpDir, cleanupCallback) {
     execCmd = 'java';
     args = ['Main'];
   } else if (language === 'python') {
-    execCmd = 'python';
+    execCmd = 'python3';
     args = ['source.py'];
   } else if (language === 'javascript') {
     execCmd = 'node';

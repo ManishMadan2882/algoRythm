@@ -35,7 +35,7 @@ async function compile(req,res)
         cpp:`g++ ${path} -o outputCPP && ./outputCPP`,
         c:`gcc ${path} -o outputC && ./outputC`,
         cs:`mcs ${path} && mono ${path.substring(0,path.length-3)}.exe`,
-        python:`python ${path}`,
+        python:`python3 ${path}`,
         javascript:`node ${path}`
        }
        const initialTime = Date.now();
